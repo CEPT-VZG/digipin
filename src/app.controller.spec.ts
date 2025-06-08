@@ -22,7 +22,7 @@ describe('AppController', () => {
       expect(result).toBeInstanceOf(AppDto);
       expect(result.success).toBe(true);
       expect(result.message).toBe(
-        'DIGIPIN API is running and API docs can be found at at /api/v1/api-docs`',
+        'DIGIPIN API is running and API docs can be found at at /api/v1/api-docs',
       );
       expect(typeof result.timestamp).toBe('number');
     });
