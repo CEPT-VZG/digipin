@@ -12,3 +12,8 @@ export class CreateDigipinDto {
   @Max(BOUNDS.maxLon)
   longitude: number;
 }
+
+export class CreateDigipinResponse {
+  success: boolean;
+  digipin: string | null;
+}

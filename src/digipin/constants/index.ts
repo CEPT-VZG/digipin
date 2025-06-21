@@ -11,3 +11,5 @@ export const BOUNDS = {
   minLon: 63.5,
   maxLon: 99.5,
 };
+
+export const DIGIPIN_LENGTH = 10;
