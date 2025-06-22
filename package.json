@@ -1,24 +1,83 @@
 {
-  "name": "digipin",
-  "version": "1.0.0",
-  "description": "",
-  "main": "server.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+  "name": "@cept-vzg/digipin",
+  "version": "2.0.0",
+  "description": "Comprehensive DIGIPIN library for encoding, decoding, and advanced geospatial operations with DIGIPINs - the Digital Postal Index Numbers by India Post",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "digipin": "./dist/cli/index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
+  "scripts": {
+    "build": "npm run clean && npm run build:cjs && npm run build:esm && npm run build:types",
+    "build:cjs": "tsc",
+    "build:esm": "tsc --module es2015 --outDir dist/esm && echo '{\"type\":\"module\"}' > dist/esm/package.json",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist/types",
+    "clean": "rimraf dist",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "prepare": "npm run build",
+    "benchmark": "node dist/benchmark/index.js"
+  },
+  "keywords": [
+    "digipin",
+    "geocoding",
+    "postal",
+    "india-post",
+    "coordinates",
+    "geospatial",
+    "gis",
+    "mapping",
+    "postal-codes",
+    "address",
+    "location"
+  ],
+  "author": "Department of Posts, Government of India",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CEPT-VZG/digipin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CEPT-VZG/digipin/issues"
+  },
+  "homepage": "https://github.com/CEPT-VZG/digipin#readme",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "docs"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.19",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "commander": "^11.1.0",
     "cors": "^2.8.5",
-    "digipin": "file:",
     "dotenv": "^16.4.7",
+    "eslint": "^8.56.0",
     "express": "^5.1.0",
+    "jest": "^29.7.0",
     "morgan": "^1.10.0",
+    "nodemon": "^3.0.3",
+    "rimraf": "^5.0.5",
     "swagger-ui-express": "^5.0.1",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
     "yaml": "^2.7.1",
     "yamljs": "^0.3.0"
-  }
+  },
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }
