@@ -6,4 +6,4 @@ import { DigipinController } from './digipin.controller';
   controllers: [DigipinController],
   providers: [DigipinService],
 })
-export class DigipinModule {}
+export class DigipinModule { }
