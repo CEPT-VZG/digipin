@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "commander": "^14.0.0",
     "cors": "^2.8.5",
     "digipin": "file:",
     "dotenv": "^16.4.7",

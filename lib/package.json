@@ -1,0 +1,79 @@
+{
+  "name": "digipin-plus",
+  "version": "1.0.0",
+  "description": "Advanced DIGIPIN library with comprehensive geospatial utilities, clustering, analysis, and integration tools",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "bin": {
+    "digipin-plus": "lib/cli/index.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./lib/index.js",
+      "require": "./lib/index.js",
+      "types": "./lib/types/index.d.ts"
+    },
+    "./core": {
+      "import": "./lib/core/index.js",
+      "require": "./lib/core/index.js"
+    },
+    "./utils": {
+      "import": "./lib/utils/index.js",
+      "require": "./lib/utils/index.js"
+    },
+    "./integrations": {
+      "import": "./lib/integrations/index.js",
+      "require": "./lib/integrations/index.js"
+    },
+    "./analysis": {
+      "import": "./lib/analysis/index.js",
+      "require": "./lib/analysis/index.js"
+    }
+  },
+  "files": [
+    "lib/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node test/test.js",
+    "benchmark": "node test/benchmark.js",
+    "lint": "echo 'Linting not configured'",
+    "build": "echo 'No build step required'",
+    "prepublishOnly": "npm test"
+  },
+  "keywords": [
+    "digipin",
+    "geocoding",
+    "geospatial",
+    "coordinates",
+    "gis",
+    "mapping",
+    "india-post",
+    "location",
+    "clustering",
+    "density-analysis",
+    "geojson",
+    "spatial-analysis"
+  ],
+  "author": "India Post - Department of Posts",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CEPT-VZG/digipin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CEPT-VZG/digipin/issues"
+  },
+  "homepage": "https://github.com/CEPT-VZG/digipin#readme",
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "dependencies": {
+    "commander": "^11.0.0"
+  },
+  "devDependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {}
+}
