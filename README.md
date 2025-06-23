@@ -94,42 +94,159 @@ The API will be available at `http://localhost:5000`.
 
 ---
 
-## 🚀 API Usage
+## 🚀 Quick Start Guide
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/CEPT-VZG/digipin.git
+   cd digipin
+   ```
+2. **Install Dependencies**
+   ```bash
+   npm install
+   ```
+3. **Environment Setup**
+   Create a `.env` file in the project root:
+   ```env
+   PORT=5000
+   NODE_ENV=development
+   ```
+4. **Start the Server**
+   ```bash
+   npm start
+   ```
+   The API will be available at `http://localhost:5000`.
+
+---
+
+## 🧑‍💻 API Usage & Examples
 
 ### Encode Coordinates to DIGIPIN
 
+**GET Example:**
 ```
 GET /api/digipin/encode?latitude=12.9716&longitude=77.5946
 ```
-
 **Response:**
-
 ```json
 {"digipin":"4P3-JK8-52C9"}
 ```
 
+**POST Example:**
+```
+POST /api/digipin/encode
+Content-Type: application/json
+{
+  "latitude": 12.9716,
+  "longitude": 77.5946
+}
+```
+**Response:**
+```json
+{"digipin":"4P3-JK8-52C9"}
+```
+
+**Error Case:**
+```
+GET /api/digipin/encode?latitude=abc&longitude=77.5946
+```
+**Response:**
+```json
+{"error": "Invalid input"}
+```
+
 ### Decode DIGIPIN to Coordinates
 
+**GET Example:**
 ```
 GET /api/digipin/decode?digipin=4P3-JK8-52C9
 ```
-
 **Response:**
-
 ```json
-{"latitude":"12.971601","longitude":"77.594584"}
+{"latitude":12.971601,"longitude":77.594584}
 ```
 
-### Interactive API Documentation
-
-Access the Swagger UI documentation at:
-
+**POST Example:**
 ```
-http://localhost:5000/api-docs
+POST /api/digipin/decode
+Content-Type: application/json
+{
+  "digipin": "4P3-JK8-52C9"
+}
+```
+**Response:**
+```json
+{"latitude":12.971601,"longitude":77.594584}
+```
+
+**Error Case:**
+```
+GET /api/digipin/decode?digipin=INVALIDCODE
+```
+**Response:**
+```json
+{"error": "Invalid DIGIPIN"}
+```
+
+### Use-Case Scenarios
+- **E-commerce Delivery:** Use DIGIPIN to pinpoint delivery locations in dense urban areas.
+- **Emergency Response:** Share a DIGIPIN for precise ambulance or fire service dispatch.
+- **KYC/Banking:** Use DIGIPIN as a verifiable address attribute for onboarding.
+- **Logistics:** Optimize route planning and reduce failed deliveries.
+
+---
+
+## 🌐 SDK & Code Samples
+
+### Python Example
+```python
+import requests
+# Encode coordinates
+resp = requests.get('http://localhost:5000/api/digipin/encode', params={'latitude': 12.9716, 'longitude': 77.5946})
+print(resp.json())  # {'digipin': '4P3-JK8-52C9'}
+# Decode DIGIPIN
+resp = requests.get('http://localhost:5000/api/digipin/decode', params={'digipin': '4P3-JK8-52C9'})
+print(resp.json())  # {'latitude': 12.971601, 'longitude': 77.594584}
+```
+
+### Java Example (using OkHttp)
+```java
+OkHttpClient client = new OkHttpClient();
+// Encode coordinates
+Request request = new Request.Builder()
+    .url("http://localhost:5000/api/digipin/encode?latitude=12.9716&longitude=77.5946")
+    .build();
+Response response = client.newCall(request).execute();
+System.out.println(response.body().string());
+// Decode DIGIPIN
+Request request2 = new Request.Builder()
+    .url("http://localhost:5000/api/digipin/decode?digipin=4P3-JK8-52C9")
+    .build();
+Response response2 = client.newCall(request2).execute();
+System.out.println(response2.body().string());
 ```
 
 ---
- 
+
+## 🗺️ Diagrams & Visualizations
+
+### DIGIPIN Grid System
+![DIGIPIN grid bounding box](docs/images/digipin-grid-bounding-box.png)
+
+### DIGIPIN Grid Labels
+![DIGIPIN grid labels](docs/images/digipin-grid-labels.png)
+
+### API Flow
+```mermaid
+graph TD;
+  A[Client] -- Encode Request --> B[API /digipin/encode];
+  B -- DIGIPIN --> A;
+  A -- Decode Request --> C[API /digipin/decode];
+  C -- Coordinates --> A;
+```
+
+---
+
 ## 🔧 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
