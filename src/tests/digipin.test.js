@@ -12,7 +12,7 @@ describe('DIGIPIN Encoder and Decoder Tests', () => {
       
       expect(digiPin).toBeTruthy();
       expect(digiPin.length).toBe(12); // 10 characters + 2 hyphens
-      expect(digiPin).toMatch("39J-438-TJC7");
+      expect(digiPin).toBe("39J-438-TJC7");
     });
     
     test('should encode Mumbai coordinates', () => {
@@ -22,7 +22,7 @@ describe('DIGIPIN Encoder and Decoder Tests', () => {
       
       expect(digiPin).toBeTruthy();
       expect(digiPin.length).toBe(12);
-      expect(digiPin).toMatch("4FK-595-8823");
+      expect(digiPin).toBe("4FK-595-8823");
     });
     
     test('should encode coordinates at boundary limits', () => {
@@ -30,13 +30,13 @@ describe('DIGIPIN Encoder and Decoder Tests', () => {
       const minPin = getDigiPin(2.5, 63.5);
       expect(minPin).toBeTruthy();
       expect(minPin.length).toBe(12);
-      expect(minPin).toMatch("LLL-LLL-LLLL");
+      expect(minPin).toBe("LLL-LLL-LLLL");
       
       // Test maximum bounds
       const maxPin = getDigiPin(38.5, 99.5);
       expect(maxPin).toBeTruthy();
       expect(maxPin.length).toBe(12);
-      expect(maxPin).toMatch("888-888-8888");
+      expect(maxPin).toBe("888-888-8888");
     });
     
     test('should throw error for latitude out of range', () => {
