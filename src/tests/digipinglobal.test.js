@@ -1,4 +1,4 @@
-const { getDigipinGlobal } = require("../digipinglobal");
+const { getDigipinGlobal, getLatLngFromDigiPinGlobal } = require("../digipinglobal");
 
 describe('DIGIPIN Global Encoder Tests', () => {
   
@@ -314,4 +314,152 @@ describe('DIGIPIN Global Encoder Tests', () => {
       });
     });
   });
+
+  describe('getLatLngFromDigiPinGlobal - Decoding Tests', () => {
+    
+    test('should decode valid Global DIGIPIN with hyphens', () => {
+      const testPin = '00-39J-438-TJC7'; // Delhi coordinates
+      const result = getLatLngFromDigiPinGlobal(testPin);
+      
+      expect(result).toHaveProperty('latitude');
+      expect(parseFloat(result.latitude)).toBeGreaterThanOrEqual(-90);
+      expect(parseFloat(result.latitude)).toBeLessThanOrEqual(90);
+      expect(result.latitude).toBe("28.613901");
+
+      expect(result).toHaveProperty('longitude');
+      expect(parseFloat(result.longitude)).toBeGreaterThanOrEqual(-180);
+      expect(parseFloat(result.longitude)).toBeLessThanOrEqual(180);
+      expect(result.longitude).toBe("77.208998");
+    });
+    
+    test('should decode valid Global DIGIPIN without hyphens', () => {
+      const testPin = '0039J438TJC7'; // Delhi coordinates
+      const result = getLatLngFromDigiPinGlobal(testPin);
+      
+      expect(result).toHaveProperty('latitude');
+      expect(parseFloat(result.latitude)).toBeGreaterThanOrEqual(-90);
+      expect(parseFloat(result.latitude)).toBeLessThanOrEqual(90);
+      expect(result.latitude).toBe("28.613901");
+
+      expect(result).toHaveProperty('longitude');
+      expect(parseFloat(result.longitude)).toBeGreaterThanOrEqual(-180);
+      expect(parseFloat(result.longitude)).toBeLessThanOrEqual(180);
+      expect(result.longitude).toBe("77.208998");
+    });
+    
+    test('should decode Global DIGIPIN from different zones', () => {
+      // Zone 1,8 (London area)
+      const londonPin = '18-FCJ-3K4-LM29'; // Approximate London coordinates
+      const londonResult = getLatLngFromDigiPinGlobal(londonPin);
+      expect(londonResult).toHaveProperty('latitude');
+      expect(londonResult).toHaveProperty('longitude');
+      expect(parseFloat(londonResult.latitude)).toBeGreaterThan(40);
+      expect(parseFloat(londonResult.latitude)).toBeLessThan(80);
+      expect(parseFloat(londonResult.longitude)).toBeGreaterThan(-10);
+      expect(parseFloat(londonResult.longitude)).toBeLessThan(30);
+      
+      // Zone 0,2 (Tokyo area)
+      const tokyoPin = '02-FCJ-3K4-LM29'; // Approximate Tokyo coordinates
+      const tokyoResult = getLatLngFromDigiPinGlobal(tokyoPin);
+      expect(tokyoResult).toHaveProperty('latitude');
+      expect(tokyoResult).toHaveProperty('longitude');
+      expect(parseFloat(tokyoResult.latitude)).toBeGreaterThan(2);
+      expect(parseFloat(tokyoResult.latitude)).toBeLessThan(40);
+      expect(parseFloat(tokyoResult.longitude)).toBeGreaterThan(135);
+      expect(parseFloat(tokyoResult.longitude)).toBeLessThan(172);
+      
+      // Zone 4,2 (Sydney area)
+      const sydneyPin = '42-FCJ-3K4-LM29'; // Approximate Sydney coordinates
+      const sydneyResult = getLatLngFromDigiPinGlobal(sydneyPin);
+      expect(sydneyResult).toHaveProperty('latitude');
+      expect(sydneyResult).toHaveProperty('longitude');
+      expect(parseFloat(sydneyResult.latitude)).toBeGreaterThan(-70);
+      expect(parseFloat(sydneyResult.latitude)).toBeLessThan(-33);
+      expect(parseFloat(sydneyResult.longitude)).toBeGreaterThan(135);
+      expect(parseFloat(sydneyResult.longitude)).toBeLessThan(172);
+    });
+    
+    test('should return coordinates with 6 decimal places', () => {
+      const testPin = '00-39J-438-TJC7';
+      const result = getLatLngFromDigiPinGlobal(testPin);
+      
+      expect(result.latitude).toMatch(/^-?\d+\.\d{6}$/);
+      expect(result.longitude).toMatch(/^-?\d+\.\d{6}$/);
+    });
+    
+    test('should throw error for invalid Global DIGIPIN length', () => {
+      expect(() => getLatLngFromDigiPinGlobal('0FCJ3K4')).toThrow('Invalid Global DIGIPIN');
+      expect(() => getLatLngFromDigiPinGlobal('')).toThrow('Invalid Global DIGIPIN');
+      expect(() => getLatLngFromDigiPinGlobal('00-FCJ-3K4-LM295')).toThrow('Invalid Global DIGIPIN');
+      expect(() => getLatLngFromDigiPinGlobal('0-FCJ-3K4-LM29')).toThrow('Invalid Global DIGIPIN');
+    });
+    
+    test('should throw error for invalid zone codes', () => {
+      expect(() => getLatLngFromDigiPinGlobal('60-FCJ-3K4-LM29')).toThrow('Invalid latitude zone code');
+      expect(() => getLatLngFromDigiPinGlobal('9A-FCJ-3K4-LM29')).toThrow('Invalid longitude zone code');
+      expect(() => getLatLngFromDigiPinGlobal('-1-FCJ-3K4-LM29')).toThrow('Invalid latitude zone code');
+    });
+    
+    test('should throw error for invalid characters in base DIGIPIN', () => {
+      expect(() => getLatLngFromDigiPinGlobal('00-FCJXK4LM29')).toThrow('Invalid character in DIGIPIN');
+      expect(() => getLatLngFromDigiPinGlobal('00-FCJ3K4LM2A')).toThrow('Invalid character in DIGIPIN');
+      expect(() => getLatLngFromDigiPinGlobal('00-FCJ3K4LM2@')).toThrow('Invalid character in DIGIPIN');
+      expect(() => getLatLngFromDigiPinGlobal('00-FCJ3K4LM21')).toThrow('Invalid character in DIGIPIN');
+    });
+    
+    test('should handle edge cases for different zones', () => {
+      // Test zone boundaries
+      const testCases = [
+        '00-LLL-LLL-LLLL', // Zone 0,0 - minimum bounds
+        '00-888-888-8888', // Zone 0,0 - maximum bounds  
+        '10-LLL-LLL-LLLL', // Zone 1,0 - latitude zone 1
+        '20-LLL-LLL-LLLL', // Zone 2,0 - latitude zone 2
+        '30-LLL-LLL-LLLL', // Zone 3,0 - latitude zone 3
+        '40-LLL-LLL-LLLL', // Zone 4,0 - latitude zone 4
+        '50-LLL-LLL-LLLL', // Zone 5,0 - latitude zone 5
+        '01-LLL-LLL-LLLL', // Zone 0,1 - longitude zone 1
+        '02-LLL-LLL-LLLL', // Zone 0,2 - longitude zone 2
+        '03-LLL-LLL-LLLL', // Zone 0,3 - longitude zone 3
+        '04-LLL-LLL-LLLL', // Zone 0,4 - longitude zone 4
+        '05-LLL-LLL-LLLL', // Zone 0,5 - longitude zone 5
+        '06-LLL-LLL-LLLL', // Zone 0,6 - longitude zone 6
+        '07-LLL-LLL-LLLL', // Zone 0,7 - longitude zone 7
+        '08-LLL-LLL-LLLL', // Zone 0,8 - longitude zone 8
+        '09-LLL-LLL-LLLL'  // Zone 0,9 - longitude zone 9
+      ];
+      
+      testCases.forEach(testPin => {
+        const result = getLatLngFromDigiPinGlobal(testPin);
+        expect(result).toHaveProperty('latitude');
+        expect(result).toHaveProperty('longitude');
+        expect(parseFloat(result.latitude)).toBeGreaterThanOrEqual(-90);
+        expect(parseFloat(result.latitude)).toBeLessThanOrEqual(90);
+        expect(parseFloat(result.longitude)).toBeGreaterThanOrEqual(-180);
+        expect(parseFloat(result.longitude)).toBeLessThanOrEqual(180);
+      });
+    });
+    
+    test('should be consistent with encoding - round trip test', () => {
+      const testCoordinates = [
+        [28.6139, 77.2090],   // Delhi (Zone 0,0)
+        [40.7128, -74.0060],  // New York (Zone 1,6)
+        [51.5074, -0.1278],   // London (Zone 1,8)
+        [35.6762, 139.6503],  // Tokyo (Zone 0,2)
+        [-33.8688, 151.2093], // Sydney (Zone 4,2)
+        [0.0, 0.0],           // Equator/Prime Meridian (Zone 3,8)
+        [80.0, 0.0],          // Arctic (Zone 2,8)
+        [-80.0, 0.0]          // Antarctic (Zone 5,8)
+      ];
+      
+      testCoordinates.forEach(([lat, lon]) => {
+        const encoded = getDigipinGlobal(lat, lon);
+        const decoded = getLatLngFromDigiPinGlobal(encoded);
+        
+        // Allow for small precision differences due to grid system
+        expect(Math.abs(parseFloat(decoded.latitude) - lat)).toBeLessThan(0.1);
+        expect(Math.abs(parseFloat(decoded.longitude) - lon)).toBeLessThan(0.1);
+      });
+    });
+  });
 });
+
