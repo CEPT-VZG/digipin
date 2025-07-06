@@ -53,9 +53,9 @@ function AdjustedLongitude(lon, loncode) {
         diff = loncode * 36;
         lon -= diff;
     } else if (loncode === 3 && lon >= 171.5 && lon <= 180.0) {
-        lon -= 108;
+        lon -= loncode * 36;
     } else if (loncode === 3 && lon >= -180 && lon < -152.5) {
-        lon += 216;
+        lon += (10 - loncode) * 36;
     } else if (loncode >= 4) {
         diff = (10 - loncode) * 36;
         lon += diff;
