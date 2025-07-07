@@ -1,4 +1,4 @@
-const { getDigiPin } = require('./digipin.js');
+const { getDigiPin, getLatLngFromDigiPin } = require('./digipin.js');
 
 function getLatitudeCode(lat) {
     const zones = [
@@ -79,6 +79,74 @@ function getDigipinGlobal(lat, lon) {
     return digipin;
 }
 
+
+function getLatLngFromDigiPinGlobal(digiPin) {
+    // Remove hyphens and validate format
+    const pin = digiPin.replace(/-/g, '');
+    if (pin.length !== 12) throw new Error('Invalid Global DIGIPIN');
+    
+    // Extract zone codes and base DIGIPIN
+    const latcodeStr = pin[0];
+    const loncodeStr = pin[1];
+    const baseDigiPin = pin.slice(2);
+    
+    // Validate zone code characters are digits
+    if (!/^\d$/.test(latcodeStr)) throw new Error('Invalid latitude zone code');
+    if (!/^\d$/.test(loncodeStr)) throw new Error('Invalid longitude zone code');
+    
+    const latcode = parseInt(latcodeStr);
+    const loncode = parseInt(loncodeStr);
+    
+    // Validate zone codes are in valid range
+    if (latcode < 0 || latcode > 5) throw new Error('Invalid latitude zone code');
+    if (loncode < 0 || loncode > 9) throw new Error('Invalid longitude zone code');
+
+    
+    // Add hyphens back to base DIGIPIN for decoding
+    const formattedBasePin = baseDigiPin.slice(0, 3) + '-' + baseDigiPin.slice(3, 6) + '-' + baseDigiPin.slice(6, 10);
+    
+    // Decode the base DIGIPIN using the existing function
+    const baseCoords = getLatLngFromDigiPin(formattedBasePin);
+    
+    // Convert adjusted coordinates back to global coordinates
+    let globalLat = parseFloat(baseCoords.latitude);
+    let globalLon = parseFloat(baseCoords.longitude);
+    
+    // Reverse the latitude adjustment
+    if (latcode < 3) {
+        const diff = latcode * 36;
+        globalLat += diff;
+    } else {
+        const diff = (latcode - 2) * 36;
+        globalLat -= diff;
+    }
+    
+    // Reverse the longitude adjustment
+    if (loncode === 1 || loncode === 2) {
+        const diff = loncode * 36;
+        globalLon += diff;
+    } else if (loncode === 3) {
+        // Handle zone 3 which spans 180° meridian
+        // Need to reverse the complex logic from AdjustedLongitude
+        const diff = (10 - loncode) * 36;  // This is 7 * 36 = 252
+        globalLon -= diff;  // Reverse the addition
+        // Handle the 180° crossing
+        if (globalLon < -180) {
+            globalLon += 360;
+        }
+    } else if (loncode >= 4) {
+        const diff = (10 - loncode) * 36;
+        globalLon -= diff;
+    }
+    
+
+    return {
+        latitude: globalLat.toFixed(6),
+        longitude: globalLon.toFixed(6)
+    };
+}
+
 module.exports = {
-    getDigipinGlobal
+    getDigipinGlobal,
+    getLatLngFromDigiPinGlobal
 };

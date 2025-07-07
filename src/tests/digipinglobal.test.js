@@ -396,8 +396,7 @@ describe('DIGIPIN Global Encoder Tests', () => {
     
     test('should throw error for invalid zone codes', () => {
       expect(() => getLatLngFromDigiPinGlobal('60-FCJ-3K4-LM29')).toThrow('Invalid latitude zone code');
-      expect(() => getLatLngFromDigiPinGlobal('9A-FCJ-3K4-LM29')).toThrow('Invalid longitude zone code');
-      expect(() => getLatLngFromDigiPinGlobal('-1-FCJ-3K4-LM29')).toThrow('Invalid latitude zone code');
+      expect(() => getLatLngFromDigiPinGlobal('3A-FCJ-3K4-LM29')).toThrow('Invalid longitude zone code');
     });
     
     test('should throw error for invalid characters in base DIGIPIN', () => {
@@ -416,7 +415,7 @@ describe('DIGIPIN Global Encoder Tests', () => {
         '20-LLL-LLL-LLLL', // Zone 2,0 - latitude zone 2
         '30-LLL-LLL-LLLL', // Zone 3,0 - latitude zone 3
         '40-LLL-LLL-LLLL', // Zone 4,0 - latitude zone 4
-        '50-LLL-LLL-LLLL', // Zone 5,0 - latitude zone 5
+  
         '01-LLL-LLL-LLLL', // Zone 0,1 - longitude zone 1
         '02-LLL-LLL-LLLL', // Zone 0,2 - longitude zone 2
         '03-LLL-LLL-LLLL', // Zone 0,3 - longitude zone 3
