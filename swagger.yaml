@@ -107,3 +107,97 @@ paths:
                     type: number
         '400':
           description: Invalid DIGIPIN
+
+  /digipin/encode/batch:
+    post:
+      summary: Encode multiple coordinates into DIGIPINs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - coords
+              properties:
+                coords:
+                  type: array
+                  description: List of latitude and longitude objects
+                  items:
+                    type: object
+                    required:
+                      - latitude
+                      - longitude
+                    properties:
+                      latitude:
+                        type: number
+                      longitude:
+                        type: number
+      responses:
+        '200':
+          description: Encoded DIGIPINs for each coordinate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        latitude:
+                          type: number
+                        longitude:
+                          type: number
+                        digipin:
+                          type: string
+                        error:
+                          type: string
+        '400':
+          description: Invalid request format
+        '413':
+          description: Too many items in batch
+
+  /digipin/decode/batch:
+    post:
+      summary: Decode multiple DIGIPINs into coordinates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - digipins
+              properties:
+                digipins:
+                  type: array
+                  description: List of DIGIPIN strings
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Decoded coordinates for each DIGIPIN
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        digipin:
+                          type: string
+                        latitude:
+                          type: string
+                        longitude:
+                          type: string
+                        error:
+                          type: string
+        '400':
+          description: Invalid request format
+        '413':
+          description: Too many items in batch
