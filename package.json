@@ -17,6 +17,7 @@
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
     "morgan": "^1.10.0",
+    "nodemon": "^3.1.10",
     "swagger-ui-express": "^5.0.1",
     "yaml": "^2.7.1",
     "yamljs": "^0.3.0"

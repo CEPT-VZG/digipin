@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGIPIN Encoder/Decoder with Map and LLM</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzJjQFX+vhnFG7xSOfPDtZTiGY="
+     crossorigin=""/>
+    <!-- Leaflet JS (Moved here to ensure L is defined before use) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/4K6pQBRlHR+A6btADFGa/"
+     crossorigin=""></script>
+    <!-- Custom styles for Inter font and general layout -->
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f0f4f8; /* Light gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 900px; /* Increased max-width to accommodate map */
+            width: 100%;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .input-group label {
+            font-weight: 600;
+            color: #334155; /* Slate 700 */
+        }
+        .input-group input[type="number"],
+        .input-group input[type="text"] {
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1; /* Slate 300 */
+            border-radius: 0.75rem; /* Rounded input fields */
+            font-size: 1rem;
+            color: #334155;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .input-group input[type="number"]:focus,
+        .input-group input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6; /* Blue 500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); /* Focus ring */
+        }
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background-color: #3b82f6; /* Blue 500 */
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb; /* Blue 600 */
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background-color: #64748b; /* Slate 500 */
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #475569; /* Slate 600 */
+            transform: translateY(-1px);
+        }
+        .btn-llm {
+            background-color: #8b5cf6; /* Violet 500 */
+            color: white;
+        }
+        .btn-llm:hover {
+            background-color: #7c3aed; /* Violet 600 */
+            transform: translateY(-1px);
+        }
+        .result-box {
+            background-color: #e2e8f0; /* Slate 200 */
+            padding: 1rem;
+            border-radius: 0.75rem;
+            min-height: 5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #1e293b; /* Slate 800 */
+            text-align: center;
+            word-break: break-all; /* Ensure long DIGIPINs wrap */
+        }
+        .error-message {
+            color: #ef4444; /* Red 500 */
+            font-weight: 600;
+            text-align: center;
+        }
+        #map {
+            height: 300px; /* Fixed height for the map */
+            width: 100%;
+            border-radius: 0.75rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .loading-indicator {
+            display: none; /* Hidden by default */
+            text-align: center;
+            padding: 1rem;
+            font-style: italic;
+            color: #64748b;
+        }
+        @media (min-width: 768px) {
+            .main-content {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+            }
+            .container {
+                padding: 2rem 3rem;
+            }
+        }
+    </style>
+    <script>
+        // DIGIPIN Encoder and Decoder Library (from digipin.js)
+        const DIGIPIN_GRID = [
+            ['F', 'C', '9', '8'],
+            ['J', '3', '2', '7'],
+            ['K', '4', '5', '6'],
+            ['L', 'M', 'P', 'T']
+        ];
+
+        const BOUNDS = {
+            minLat: 2.5,
+            maxLat: 38.5,
+            minLon: 63.5,
+            maxLon: 99.5
+        };
+
+        function getDigiPin(lat, lon) {
+            if (lat < BOUNDS.minLat || lat > BOUNDS.maxLat) throw new Error('Latitude out of range (2.5 to 38.5)');
+            if (lon < BOUNDS.minLon || lon > BOUNDS.maxLon) throw new Error('Longitude out of range (63.5 to 99.5)');
+
+            let minLat = BOUNDS.minLat;
+            let maxLat = BOUNDS.maxLat;
+            let minLon = BOUNDS.minLon;
+            let maxLon = BOUNDS.maxLon;
+
+            let digiPin = '';
+
+            for (let level = 1; level <= 10; level++) {
+                const latDiv = (maxLat - minLat) / 4;
+                const lonDiv = (maxLon - minLon) / 4;
+
+                // REVERSED row logic (to match original)
+                let row = 3 - Math.floor((lat - minLat) / latDiv);
+                let col = Math.floor((lon - minLon) / lonDiv);
+
+                row = Math.max(0, Math.min(row, 3));
+                col = Math.max(0, Math.min(col, 3));
+
+                digiPin += DIGIPIN_GRID[row][col];
+
+                if (level === 3 || level === 6) digiPin += '-';
+
+                // Update bounds (reverse logic for row)
+                maxLat = minLat + latDiv * (4 - row);
+                minLat = minLat + latDiv * (3 - row);
+
+                minLon = minLon + lonDiv * col;
+                maxLon = minLon + lonDiv;
+            }
+
+            return digiPin;
+        }
+
+
+        function getLatLngFromDigiPin(digiPin) {
+            const pin = digiPin.replace(/-/g, '');
+            if (pin.length !== 10) throw new Error('Invalid DIGIPIN length. Must be 10 alphanumeric characters.');
+
+            let minLat = BOUNDS.minLat;
+            let maxLat = BOUNDS.maxLat;
+            let minLon = BOUNDS.minLon;
+            let maxLon = BOUNDS.maxLon;
+
+            for (let i = 0; i < 10; i++) {
+                const char = pin[i];
+                let found = false;
+                let ri = -1, ci = -1;
+
+                // Locate character in DIGIPIN grid
+                for (let r = 0; r < 4; r++) {
+                    for (let c = 0; c < 4; c++) {
+                        if (DIGIPIN_GRID[r][c] === char) {
+                            ri = r;
+                            ci = c;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) break;
+                }
+
+                if (!found) throw new Error(`Invalid character '${char}' in DIGIPIN at position ${i + 1}.`);
+
+                const latDiv = (maxLat - minLat) / 4;
+                const lonDiv = (maxLon - minLon) / 4;
+
+                const lat1 = maxLat - latDiv * (ri + 1);
+                const lat2 = maxLat - latDiv * ri;
+                const lon1 = minLon + lonDiv * ci;
+                const lon2 = minLon + lonDiv * (ci + 1);
+
+                // Update bounding box for next level
+                minLat = lat1;
+                maxLat = lat2;
+                minLon = lon1;
+                maxLon = lon2;
+            }
+
+            const centerLat = (minLat + maxLat) / 2;
+            const centerLon = (minLon + maxLon) / 2;
+
+            return {
+                latitude: centerLat.toFixed(6),
+                longitude: centerLon.toFixed(6)
+            };
+        }
+
+        // DOM Elements
+        const latitudeInput = document.getElementById('latitude');
+        const longitudeInput = document.getElementById('longitude');
+        const digipinInput = document.getElementById('digipinInput');
+        const encodeBtn = document.getElementById('encodeBtn');
+        const decodeBtn = document.getElementById('decodeBtn');
+        const getLocationBtn = document.getElementById('getLocationBtn');
+        const resultDisplay = document.getElementById('resultDisplay');
+        const errorMessage = document.getElementById('errorMessage');
+        const mapDiv = document.getElementById('map');
+        const describeLocationBtn = document.getElementById('describeLocationBtn');
+        const llmLoading = document.getElementById('llmLoading');
+        const llmDescriptionDisplay = document.getElementById('llmDescriptionDisplay');
+
+        let lastDecodedCoords = null; // To store coordinates for LLM description
+
+        let map; // Declare map variable globally or in a scope accessible to addMarker
+        let marker = null; // To store the current marker on the map
+
+        // Function to clear messages and LLM display
+        function clearMessages() {
+            resultDisplay.textContent = '';
+            errorMessage.textContent = '';
+            resultDisplay.style.color = '#1e293b'; /* Reset to default text color */
+            llmDescriptionDisplay.textContent = '';
+            llmDescriptionDisplay.style.display = 'none';
+            llmLoading.style.display = 'none';
+            describeLocationBtn.style.display = 'none'; // Hide LLM button by default
+            lastDecodedCoords = null;
+        }
+
+        // Add a marker to the map
+        function addMarker(lat, lon, popupText) {
+            if (marker) {
+                map.removeLayer(marker); // Remove existing marker
+            }
+            marker = L.marker([lat, lon]).addTo(map)
+                .bindPopup(popupText)
+                .openPopup();
+            map.setView([lat, lon], 13); // Center map on marker with zoom
+        }
+
+        // Encode Button Event Listener
+        encodeBtn.addEventListener('click', () => {
+            clearMessages();
+            const lat = parseFloat(latitudeInput.value);
+            const lon = parseFloat(longitudeInput.value);
+
+            if (isNaN(lat) || isNaN(lon)) {
+                errorMessage.textContent = 'Please enter valid numbers for Latitude and Longitude.';
+                return;
+            }
+
+            try {
+                const digipin = getDigiPin(lat, lon);
+                resultDisplay.textContent = `DIGIPIN: ${digipin}`;
+                addMarker(lat, lon, `Location: ${lat}, ${lon}<br>DIGIPIN: ${digipin}`);
+            } catch (error) {
+                errorMessage.textContent = `Error encoding: ${error.message}`;
+            }
+        });
+
+        // Decode Button Event Listener
+        decodeBtn.addEventListener('click', () => {
+            clearMessages();
+            const digipin = digipinInput.value.trim();
+
+            if (!digipin) {
+                errorMessage.textContent = 'Please enter a DIGIPIN to decode.';
+                return;
+            }
+
+            try {
+                const coords = getLatLngFromDigiPin(digipin);
+                resultDisplay.textContent = `Latitude: ${coords.latitude}, Longitude: ${coords.longitude}`;
+                addMarker(parseFloat(coords.latitude), parseFloat(coords.longitude), `DIGIPIN: ${digipin}<br>Location: ${coords.latitude}, ${coords.longitude}`);
+
+                // Store decoded coords and show LLM button
+                lastDecodedCoords = { latitude: coords.latitude, longitude: coords.longitude };
+                describeLocationBtn.style.display = 'block';
+
+            } catch (error) {
+                errorMessage.textContent = `Error decoding: ${error.message}`;
+            }
+        });
+
+        // Get Location Button Event Listener
+        getLocationBtn.addEventListener('click', () => {
+            clearMessages();
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        latitudeInput.value = lat.toFixed(6);
+                        longitudeInput.value = lon.toFixed(6);
+
+                        // Automatically encode and display DIGIPIN
+                        try {
+                            const digipin = getDigiPin(lat, lon);
+                            resultDisplay.textContent = `Your Location DIGIPIN: ${digipin}`;
+                            addMarker(lat, lon, `Your current location<br>DIGIPIN: ${digipin}`);
+
+                            // Store coords and show LLM button
+                            lastDecodedCoords = { latitude: lat.toFixed(6), longitude: lon.toFixed(6) };
+                            describeLocationBtn.style.display = 'block';
+
+                        } catch (error) {
+                            errorMessage.textContent = `Error encoding your location: ${error.message}`;
+                            addMarker(lat, lon, `Your current location`); // Still show marker even if encoding fails
+                        }
+
+                    },
+                    (error) => {
+                        let msg = 'Error getting your location: ';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                msg += "User denied the request for Geolocation. Please allow location access in your browser settings.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                msg += "Location information is unavailable.";
+                                break;
+                            case error.TIMEOUT:
+                                msg += "The request to get user location timed out.";
+                                break;
+                            case error.UNKNOWN_ERROR:
+                                msg += "An unknown error occurred.";
+                                break;
+                        }
+                        errorMessage.textContent = msg;
+                        resultDisplay.textContent = 'Could not get your location.';
+                    }
+                );
+            } else {
+                errorMessage.textContent = 'Geolocation is not supported by your browser.';
+                resultDisplay.textContent = 'Geolocation not available.';
+            }
+        });
+
+        // LLM Describe Location Button Event Listener
+        describeLocationBtn.addEventListener('click', async () => {
+            if (!lastDecodedCoords) {
+                errorMessage.textContent = "No coordinates available to describe. Please decode a DIGIPIN or get your location first.";
+                return;
+            }
+
+            llmDescriptionDisplay.textContent = '';
+            llmDescriptionDisplay.style.display = 'none';
+            llmLoading.style.display = 'block';
+            errorMessage.textContent = ''; // Clear previous errors
+
+            const lat = lastDecodedCoords.latitude;
+            const lon = lastDecodedCoords.longitude;
+            const prompt = `Describe the area around latitude ${lat} and longitude ${lon} in India with a very short, human-readable address-like description. For example, 'Near famous landmark, City, State'. Keep it concise.`;
+
+            try {
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // Canvas will provide this at runtime if empty
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    llmDescriptionDisplay.textContent = `Description: ${text}`;
+                    llmDescriptionDisplay.style.display = 'block';
+                } else {
+                    llmDescriptionDisplay.textContent = 'Could not generate a description for this location.';
+                    llmDescriptionDisplay.style.display = 'block';
+                    console.error('Gemini API response structure unexpected:', result);
+                }
+            } catch (error) {
+                errorMessage.textContent = `Failed to get description: ${error.message}`;
+                console.error('Error calling Gemini API:', error);
+            } finally {
+                llmLoading.style.display = 'none';
+            }
+        });
+
+
+        // Example values for quick testing
+        latitudeInput.value = '28.622788';
+        longitudeInput.value = '77.213033';
+        digipinInput.value = '39J-49L-L8T4';
+
+        // Initial marker for the example coordinates
+        // This will be called after the map is initialized in the script
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Leaflet Map here, inside DOMContentLoaded
+            map = L.map('map').setView([22.351115, 78.656891], 5);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            addMarker(parseFloat(latitudeInput.value), parseFloat(longitudeInput.value), `Example Location: ${latitudeInput.value}, ${longitudeInput.value}`);
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-extrabold text-center text-gray-800 mb-4">DIGIPIN App with Map and LLM</h1>
+
+        <div class="main-content">
+            <!-- Left Column: Encode/Decode Sections -->
+            <div>
+                <!-- Encode Section -->
+                <div class="bg-blue-50 p-6 rounded-xl shadow-inner mb-6">
+                    <h2 class="text-xl font-bold text-blue-800 mb-4 text-center">Encode Coordinates to DIGIPIN</h2>
+                    <div class="input-group">
+                        <label for="latitude">Latitude:</label>
+                        <input type="number" id="latitude" placeholder="e.g., 28.622788" step="any">
+                    </div>
+                    <div class="input-group mt-4">
+                        <label for="longitude">Longitude:</label>
+                        <input type="number" id="longitude" placeholder="e.g., 77.213033" step="any">
+                    </div>
+                    <div class="button-group">
+                        <button id="encodeBtn" class="btn btn-primary">Encode to DIGIPIN</button>
+                        <button id="getLocationBtn" class="btn btn-primary">Get My Location</button>
+                    </div>
+                </div>
+
+                <!-- Decode Section -->
+                <div class="bg-green-50 p-6 rounded-xl shadow-inner">
+                    <h2 class="text-xl font-bold text-green-800 mb-4 text-center">Decode DIGIPIN to Coordinates</h2>
+                    <div class="input-group">
+                        <label for="digipinInput">DIGIPIN:</label>
+                        <input type="text" id="digipinInput" placeholder="e.g., 39J-49L-L8T4">
+                    </div>
+                    <div class="button-group">
+                        <button id="decodeBtn" class="btn btn-secondary">Decode to Lat/Lon</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Map and Result Display -->
+            <div>
+                <div id="map"></div>
+                <!-- Result Display -->
+                <div class="result-box mt-4" id="resultDisplay">
+                    Enter coordinates or DIGIPIN to see results.
+                </div>
+                <!-- LLM Description -->
+                <div class="button-group mt-4">
+                    <button id="describeLocationBtn" class="btn btn-llm" style="display: none;">✨ Describe Location</button>
+                </div>
+                <div class="loading-indicator" id="llmLoading">Generating description...</div>
+                <div class="result-box mt-2" id="llmDescriptionDisplay" style="display: none;"></div>
+                <div class="error-message mt-2" id="errorMessage"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
