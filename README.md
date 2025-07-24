@@ -92,6 +92,26 @@ npm run dev
 
 The API will be available at `http://localhost:5000`.
 
+### Testing
+
+Run the test suite:
+
+```bash
+npm test
+```
+
+Run tests with coverage:
+
+```bash
+npm run test:coverage
+```
+
+Run tests in watch mode:
+
+```bash
+npm run test:watch
+```
+
 ---
 
 ## 🚀 API Usage
@@ -119,6 +139,17 @@ GET /api/digipin/decode?digipin=4P3-JK8-52C9
 ```json
 {"latitude":"12.971601","longitude":"77.594584"}
 ```
+
+### Health Check Endpoints
+
+The API provides comprehensive health check endpoints for monitoring and orchestration:
+
+- **Basic Health**: `GET /health` - Simple status check
+- **Detailed Health**: `GET /health/detailed` - System information and metrics
+- **Readiness Check**: `GET /health/ready` - Service readiness verification
+- **Liveness Check**: `GET /health/live` - Process alive verification
+
+For detailed documentation, see [Health Checks Documentation](docs/HEALTH_CHECKS.md).
 
 ### Interactive API Documentation
 
