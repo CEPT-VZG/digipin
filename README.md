@@ -167,11 +167,25 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+3. Commit your changes using conventional commit format:
+   ```bash
+   git commit -m 'feat: add some amazing feature'
+   git commit -m 'fix: resolve coordinate precision issue'
+   git commit -m 'docs: update API documentation'
+   ```
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
 Please ensure your code adheres to the existing style and passes all tests.
+
+### Release Notes
+
+Release notes are automatically generated when pull requests are merged to the main branch. Each merge creates a release with:
+
+- PR title and description
+- List of commits in the PR
+- Author and branch information
+- Number of files changed
 
 ---
 
