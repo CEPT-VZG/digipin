@@ -1,0 +1,97 @@
+name: Release Notes
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+      - master
+
+jobs:
+  release-notes:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Generate Release Notes
+        id: release_notes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              const { data: commits } = await github.rest.pulls.listCommits({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number
+              });
+              
+              let releaseNotes = `## Release Notes for PR #${context.payload.pull_request.number}\n\n`;
+              releaseNotes += `**Merged**: ${new Date().toISOString().split('T')[0]}\n`;
+              releaseNotes += `**Title**: ${context.payload.pull_request.title}\n\n`;
+              
+              if (context.payload.pull_request.body) {
+                releaseNotes += `## Description\n\n${context.payload.pull_request.body}\n\n`;
+              }
+              
+              releaseNotes += `## Changes\n\n`;
+              
+              commits.forEach(commit => {
+                releaseNotes += `- ${commit.commit.message}\n`;
+              });
+              
+              releaseNotes += `\n## PR Details\n\n`;
+              releaseNotes += `- **Author**: ${context.payload.pull_request.user.login}\n`;
+              releaseNotes += `- **Branch**: ${context.payload.pull_request.head.ref} → ${context.payload.pull_request.base.ref}\n`;
+              releaseNotes += `- **Commits**: ${commits.length}\n`;
+              releaseNotes += `- **Files Changed**: ${context.payload.pull_request.changed_files}\n`;
+              
+              core.setOutput('release_notes', releaseNotes);
+            } catch (error) {
+              console.log('Error fetching PR data:', error.message);
+              
+              // Fallback release notes if PR data is not available
+              let releaseNotes = `## Release Notes for PR #${context.payload.pull_request.number}\n\n`;
+              releaseNotes += `**Merged**: ${new Date().toISOString().split('T')[0]}\n`;
+              releaseNotes += `**Title**: ${context.payload.pull_request.title}\n\n`;
+              
+              if (context.payload.pull_request.body) {
+                releaseNotes += `## Description\n\n${context.payload.pull_request.body}\n\n`;
+              }
+              
+              releaseNotes += `## PR Details\n\n`;
+              releaseNotes += `- **Author**: ${context.payload.pull_request.user.login}\n`;
+              releaseNotes += `- **Branch**: ${context.payload.pull_request.head.ref} → ${context.payload.pull_request.base.ref}\n`;
+              releaseNotes += `- **Files Changed**: ${context.payload.pull_request.changed_files}\n`;
+              
+              core.setOutput('release_notes', releaseNotes);
+            }
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: pr-${{ github.event.pull_request.number }}-${{ github.sha }}-1
+          release_name: Release PR #${{ github.event.pull_request.number }}
+          body: ${{ steps.release_notes.outputs.release_notes }}
+          draft: false
+          prerelease: false 

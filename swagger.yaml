@@ -7,6 +7,128 @@ servers:
   - url: http://localhost:5000/api
 
 paths:
+  /health:
+    get:
+      summary: Basic health check
+      description: Returns simple OK status for load balancers and basic monitoring
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "OK"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  service:
+                    type: string
+                    example: "DIGIPIN API"
+
+  /health/detailed:
+    get:
+      summary: Detailed health check
+      description: Returns comprehensive system information for monitoring and debugging
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Detailed health information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "OK"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  service:
+                    type: string
+                  version:
+                    type: string
+                  uptime:
+                    type: object
+                  system:
+                    type: object
+                  environment:
+                    type: string
+
+  /health/ready:
+    get:
+      summary: Readiness check
+      description: Verifies that the service is ready to accept requests. Used by Kubernetes and other orchestration systems.
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "READY"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  service:
+                    type: string
+                  checks:
+                    type: object
+        '503':
+          description: Service is not ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "NOT_READY"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  service:
+                    type: string
+                  reason:
+                    type: string
+
+  /health/live:
+    get:
+      summary: Liveness check
+      description: Simple check to verify the process is alive. Used by Kubernetes liveness probes.
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ALIVE"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  service:
+                    type: string
+                  pid:
+                    type: integer
+
   /digipin/encode:
     post:
       summary: Encode lat/lon into DIGIPIN

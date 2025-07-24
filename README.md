@@ -92,6 +92,26 @@ npm run dev
 
 The API will be available at `http://localhost:5000`.
 
+### Testing
+
+Run the test suite:
+
+```bash
+npm test
+```
+
+Run tests with coverage:
+
+```bash
+npm run test:coverage
+```
+
+Run tests in watch mode:
+
+```bash
+npm run test:watch
+```
+
 ---
 
 ## 🚀 API Usage
@@ -120,6 +140,17 @@ GET /api/digipin/decode?digipin=4P3-JK8-52C9
 {"latitude":"12.971601","longitude":"77.594584"}
 ```
 
+### Health Check Endpoints
+
+The API provides comprehensive health check endpoints for monitoring and orchestration:
+
+- **Basic Health**: `GET /health` - Simple status check
+- **Detailed Health**: `GET /health/detailed` - System information and metrics
+- **Readiness Check**: `GET /health/ready` - Service readiness verification
+- **Liveness Check**: `GET /health/live` - Process alive verification
+
+For detailed documentation, see [Health Checks Documentation](docs/HEALTH_CHECKS.md).
+
 ### Interactive API Documentation
 
 Access the Swagger UI documentation at:
@@ -136,11 +167,25 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+3. Commit your changes using conventional commit format:
+   ```bash
+   git commit -m 'feat: add some amazing feature'
+   git commit -m 'fix: resolve coordinate precision issue'
+   git commit -m 'docs: update API documentation'
+   ```
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
 Please ensure your code adheres to the existing style and passes all tests.
+
+### Release Notes
+
+Release notes are automatically generated when pull requests are merged to the main branch. Each merge creates a release with:
+
+- PR title and description
+- List of commits in the PR
+- Author and branch information
+- Number of files changed
 
 ---
 
