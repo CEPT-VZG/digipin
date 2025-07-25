@@ -9,20 +9,41 @@ servers:
 paths:
   /digipin/encode:
     post:
-      summary: Encode lat/lon into DIGIPIN
+      summary: Encode coordinates (decimal or Degrees, Minutes, Seconds (DMS) format) into DIGIPIN
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                latitude:
-                  type: number
-                longitude:
-                  type: number
+              oneOf:
+                - type: object
+                  properties:
+                    latitude:
+                      type: number
+                      description: Latitude in decimal degrees
+                    longitude:
+                      type: number
+                      description: Longitude in decimal degrees
+                  required: [latitude, longitude]
+                  example:
+                    latitude: 12.9028
+                    longitude: 77.6067
+                - type: object
+                  properties:
+                    coordinates:
+                      type: string
+                      description: 'Degrees, Minutes, Seconds (DMS) coordinate string (e.g., "12°54''10.3"N 77°36''22.3"E")'
+                      example: '12°54''10.3\"N 77°36''22.3\"E'
+                  required: [coordinates]
+                - type: object
+                  properties:
+                    lat_long:
+                      type: string
+                      description: 'lat,long coordinate string (e.g., "12.90301231802493, 77.60608024979209")'
+                      example: "12.90301231802493, 77.60608024979209"
+                  required: [lat_long]
       responses:
-        '200':
+        "200":
           description: Successfully encoded DIGIPIN
           content:
             application/json:
@@ -31,23 +52,47 @@ paths:
                 properties:
                   digipin:
                     type: string
-        '400':
+        "400":
           description: Invalid input
+
     get:
-      summary: Encode latitude and longitude into DIGIPIN
+      summary: Encode coordinates (decimal or Degrees, Minutes, Seconds (DMS) format) into DIGIPIN
+      description: |
+        Provide EITHER:  
+        - Both latitude AND longitude parameters (decimal degrees), OR    
+        - The coordinates parameter (DMS format)      
+        Do not mix parameter types.
       parameters:
         - in: query
           name: latitude
-          required: true
+          required: false
           schema:
             type: number
+          description: Latitude in decimal degrees (REQUIRED if using decimal format - must be used with longitude)"
         - in: query
           name: longitude
-          required: true
+          required: false
           schema:
             type: number
+          description: Longitude in decimal degrees (REQUIRED if using decimal format - must be used with latitude)"
+        - in: query
+          name: coordinates
+          required: false
+          schema:
+            type: string
+            pattern: '^\d+°\d+''[\d.]+\"[NS]\s+\d+°\d+''[\d.]+\"[EW]$'
+          description: 'DMS coordinate string (alternative to lat/lon) - format: "12°54''10.3"N 77°36''22.3"E")'
+          example: '12°54''10.3"N 77°36''22.3"E'
+        - in: query
+          name: lat_long
+          required: false
+          schema:
+            type: string
+            pattern: '^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$'
+          description: 'lat,long coordinate string (e.g., "12.90301231802493, 77.60608024979209")'
+          example: "12.90301231802493, 77.60608024979209"
       responses:
-        '200':
+        "200":
           description: Successfully encoded DIGIPIN
           content:
             application/json:
@@ -56,7 +101,7 @@ paths:
                 properties:
                   digipin:
                     type: string
-        '400':
+        "400":
           description: Invalid input
 
   /digipin/decode:
@@ -72,7 +117,7 @@ paths:
                 digipin:
                   type: string
       responses:
-        '200':
+        "200":
           description: Successfully decoded DIGIPIN
           content:
             application/json:
@@ -83,7 +128,7 @@ paths:
                     type: number
                   longitude:
                     type: number
-        '400':
+        "400":
           description: Invalid DIGIPIN
     get:
       summary: Decode DIGIPIN to coordinates
@@ -94,7 +139,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Successfully decoded DIGIPIN
           content:
             application/json:
@@ -105,5 +150,5 @@ paths:
                     type: number
                   longitude:
                     type: number
-        '400':
+        "400":
           description: Invalid DIGIPIN
