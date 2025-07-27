@@ -9,11 +9,12 @@
 
 DIGIPIN (Digital PIN) is a 10-character alphanumeric geocode developed by the Department of Posts, India. It provides a precise, user-friendly way to encode geographic coordinates that can be easily shared and decoded back to latitude/longitude pairs.
 
-This open-source Node.js project exposes a public API to generate and decode DIGIPINs, supporting geolocation services, postal logistics, and spatial analysis applications.
+This open-source Node.js (Nest.js) project exposes a public API to generate and decode DIGIPINs, supporting geolocation services, postal logistics, and spatial analysis applications.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Node.js](https://img.shields.io/badge/Node.js-v14+-green.svg)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express-v4.x-blue.svg)](https://expressjs.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-v20.18+-green.svg)](https://nodejs.org/)
+[![Nest.js](https://img.shields.io/badge/Nest.js-v11+-red.svg)](https://nestjs.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-v5.7+-blue.svg)](https://www.typescriptlang.org/)
 
 ---
 
@@ -43,7 +44,7 @@ DIGIPIN simplifies address management and enhances service delivery accuracy, pr
 - **Lightweight**: Optimized for performance and minimal resource usage
 - **RESTful API**: Clean, standard-compliant endpoints
 - **Interactive Documentation**: Comprehensive Swagger UI for easy exploration
-- **Production-Ready**: Built with Node.js and Express for reliability
+- **Production-Ready**: Built with Node.js and Nest.js for reliability and scalability in enterprise-grade applications. 
 
 ---
 
@@ -51,8 +52,8 @@ DIGIPIN simplifies address management and enhances service delivery accuracy, pr
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
-- npm (v6 or higher)
+- Node.js (v20.18 or higher)
+- npm (v10.8 or higher)
 
 ### Getting Started
 
@@ -71,12 +72,7 @@ npm install
 
 3. **Environment Setup**
 
-Create a `.env` file in the project root with the following variables:
-
-```
-PORT=5000
-NODE_ENV=development
-```
+Not needed.
 
 4. **Start the Server**
 
@@ -87,10 +83,10 @@ npm start
 For development with hot reloading:
 
 ```bash
-npm run dev
+npm run start:dev
 ```
 
-The API will be available at `http://localhost:5000`.
+The API will be available at `http://localhost:5000/api/v1`.
 
 ---
 
@@ -99,25 +95,25 @@ The API will be available at `http://localhost:5000`.
 ### Encode Coordinates to DIGIPIN
 
 ```
-GET /api/digipin/encode?latitude=12.9716&longitude=77.5946
+GET /api/v1/digipin/encode?latitude=12.9716&longitude=77.5946
 ```
 
 **Response:**
 
 ```json
-{"digipin":"4P3-JK8-52C9"}
+{"success":true,"digipin":"4P3-JK8-52C9"}
 ```
 
 ### Decode DIGIPIN to Coordinates
 
 ```
-GET /api/digipin/decode?digipin=4P3-JK8-52C9
+GET /api/v1/digipin/decode?digipin=4P3-JK8-52C9
 ```
 
 **Response:**
 
 ```json
-{"latitude":"12.971601","longitude":"77.594584"}
+{"success":true,"latitude":12.971601,"longitude":77.594584}
 ```
 
 ### Interactive API Documentation
@@ -125,7 +121,7 @@ GET /api/digipin/decode?digipin=4P3-JK8-52C9
 Access the Swagger UI documentation at:
 
 ```
-http://localhost:5000/api-docs
+http://localhost:5000/api/v1/api-docs
 ```
 
 ---
