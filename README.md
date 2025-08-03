@@ -99,7 +99,7 @@ The API will be available at `http://localhost:5000`.
 ### Encode Coordinates to DIGIPIN
 
 ```
-GET /api/digipin/encode?latitude=12.9716&longitude=77.5946
+GET /api/digipin/encode?latitude=12.9716&longitude=77.5946&countryCode=IN
 ```
 
 **Response:**
@@ -111,7 +111,7 @@ GET /api/digipin/encode?latitude=12.9716&longitude=77.5946
 ### Decode DIGIPIN to Coordinates
 
 ```
-GET /api/digipin/decode?digipin=4P3-JK8-52C9
+GET /api/digipin/decode?digipin=4P3-JK8-52C9&countryCode=IN
 ```
 
 **Response:**

@@ -21,6 +21,8 @@ paths:
                   type: number
                 longitude:
                   type: number
+                countryCode:
+                  type: string
       responses:
         '200':
           description: Successfully encoded DIGIPIN
@@ -46,6 +48,11 @@ paths:
           required: true
           schema:
             type: number
+        - in: query
+          name: countryCode
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Successfully encoded DIGIPIN
@@ -71,6 +78,8 @@ paths:
               properties:
                 digipin:
                   type: string
+                countryCode:
+                  type: string
       responses:
         '200':
           description: Successfully decoded DIGIPIN
@@ -90,6 +99,11 @@ paths:
       parameters:
         - in: query
           name: digipin
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: countryCode
           required: true
           schema:
             type: string

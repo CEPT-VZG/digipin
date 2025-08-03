@@ -4,9 +4,22 @@
  * Released under an open-source license for public use
  *
  * This module contains two main functions:
- *  - getDigiPin(lat, lon): Encodes latitude & longitude into a 10-digit alphanumeric DIGIPIN
- *  - getLatLngFromDigiPin(digiPin): Decodes a DIGIPIN back into its central latitude & longitude
+ * - getDigiPin(lat, lon, countryCode):
+ *    Generates a DIGIPIN, which is an alphanumeric code of country-specific length,
+ *    by encoding the provided latitude and longitude.
+ * 
+ * - getLatLngFromDigiPin(digiPin, countryCode): Decodes a DIGIPIN back into its central latitude & longitude as per specified country code
  */
+
+const BOUNDS = {
+    "IN":{
+    length: 10,
+    minLat: 2.5,
+    maxLat: 38.5,
+    minLon: 63.5,
+    maxLon: 99.5
+  }
+};
 
 const DIGIPIN_GRID = [
     ['F', 'C', '9', '8'],
@@ -15,25 +28,20 @@ const DIGIPIN_GRID = [
     ['L', 'M', 'P', 'T']
   ];
   
-  const BOUNDS = {
-    minLat: 2.5,
-    maxLat: 38.5,
-    minLon: 63.5,
-    maxLon: 99.5
-  };
+
+  function getDigiPin(lat, lon, countryCode) {
+    if (!BOUNDS[countryCode]) throw new Error('Unsupported country code');
+    if (lat < BOUNDS[countryCode].minLat || lat > BOUNDS[countryCode].maxLat) throw new Error('Latitude out of range');
+    if (lon < BOUNDS[countryCode].minLon || lon > BOUNDS[countryCode].maxLon) throw new Error('Longitude out of range');
   
-  function getDigiPin(lat, lon) {
-    if (lat < BOUNDS.minLat || lat > BOUNDS.maxLat) throw new Error('Latitude out of range');
-    if (lon < BOUNDS.minLon || lon > BOUNDS.maxLon) throw new Error('Longitude out of range');
-  
-    let minLat = BOUNDS.minLat;
-    let maxLat = BOUNDS.maxLat;
-    let minLon = BOUNDS.minLon;
-    let maxLon = BOUNDS.maxLon;
+    let minLat = BOUNDS[countryCode].minLat;
+    let maxLat = BOUNDS[countryCode].maxLat;
+    let minLon = BOUNDS[countryCode].minLon;
+    let maxLon = BOUNDS[countryCode].maxLon;
   
     let digiPin = '';
-  
-    for (let level = 1; level <= 10; level++) {
+    
+    for (let level = 1; level <= BOUNDS[countryCode].length; level++) {
       const latDiv = (maxLat - minLat) / 4;
       const lonDiv = (maxLon - minLon) / 4;
   
@@ -58,18 +66,19 @@ const DIGIPIN_GRID = [
   
     return digiPin;
   }
-  
-  
-  function getLatLngFromDigiPin(digiPin) {
+
+
+  function getLatLngFromDigiPin(digiPin, countryCode) {
     const pin = digiPin.replace(/-/g, '');
-    if (pin.length !== 10) throw new Error('Invalid DIGIPIN');
+    if (!BOUNDS[countryCode]) throw new Error('Unsupported country code');
+    if (pin.length !== BOUNDS[countryCode].length) throw new Error('Invalid DIGIPIN');
     
-    let minLat = BOUNDS.minLat;
-    let maxLat = BOUNDS.maxLat;
-    let minLon = BOUNDS.minLon;
-    let maxLon = BOUNDS.maxLon;
+    let minLat = BOUNDS[countryCode].minLat;
+    let maxLat = BOUNDS[countryCode].maxLat;
+    let minLon = BOUNDS[countryCode].minLon;
+    let maxLon = BOUNDS[countryCode].maxLon;
   
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < BOUNDS[countryCode].length; i++) {
       const char = pin[i];
       let found = false;
       let ri = -1, ci = -1;
