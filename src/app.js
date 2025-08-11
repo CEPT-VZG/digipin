@@ -10,6 +10,14 @@ const path = require('path');
 // const swaggerDocument = YAML.load(path.join(__dirname, '../swagger.yaml'));
 const swaggerDocument = YAML.parse(fs.readFileSync(path.join(__dirname, '../swagger.yaml'), 'utf8'));
 
+// Make port configurable in swagger document
+const PORT = process.env.PORT || 5000;
+swaggerDocument.servers = [
+  {
+    url: `http://localhost:${PORT}/api`
+  }
+];
+
 const app = express();
 
 // Middleware

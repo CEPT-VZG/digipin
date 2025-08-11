@@ -4,6 +4,7 @@ info:
   description: Encode and decode DIGIPIN based on latitude and longitude
   version: 1.0.0
 servers:
+  # Server URL is dynamically configured in app.js based on process.env.PORT
   - url: http://localhost:5000/api
 
 paths:
