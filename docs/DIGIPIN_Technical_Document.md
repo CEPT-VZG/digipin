@@ -113,6 +113,13 @@ As explained above, the DIGIPIN generation is an iterative procedure. At level-1
 | Grid Width | 9° | 2.25° | 33.75′ | 8.44′ | 2.11′ | 0.53′ | 0.13′ | 0.03′ | 0.5″ | 0.12″ |
 | Approx. Distance | 1000 km | 250 km | 62.5 km | 15.6 km | 3.9 km | 1 km | 250 m | 60 m | 15 m | 3.8 m |
 
+New 8 Code lenth version:
+
+| Code Length      | 1      | 2      | 3       | 4       | 5       | 6        | 7         | 8         |
+| ---------------- | ------ | -------| --------| --------| ------- | -------- | --------- | --------- |
+| Grid Width       | 6°     | 1°     | 10′     | 1.6667′ | 0.2778′ | 0.04663′ | 0.007716′ | 0.001286′ |
+| Approx. Distance | 667 km | 111 km | 18.5 km | 3.09 km | 514 m   | 85.7 m   | 14.3 m    | 2.38 m    |
+
 *Table 1: DIGIPIN grid size at different levels*
 
 ## 4. Key differences between Beta version and Final Version of DIGIPIN
